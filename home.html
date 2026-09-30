@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Team Board</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header" id="main-header">
+            <h2>Team Board</h2>
+        </header>
+
+        <main class="main-content">
+            <div id="posts-feed" class="posts-feed">
+                <!-- Posts load here -->
+            </div>
+        </main>
+
+        <!-- Comments Modal -->
+        <div id="comments-modal" class="comments-modal-overlay hidden">
+            <div class="comments-modal-content glass-card" id="comments-content-box">
+                <button id="close-comments-icon" class="close-icon-btn"><i class="fa-solid fa-xmark"></i></button>
+                <h3 class="modal-title">Comments</h3>
+                <div id="comments-list" class="comments-list"></div>
+                <div class="add-comment-bar">
+                    <input type="text" id="comment-input" placeholder="Add a comment..." dir="auto">
+                    <button id="send-comment-btn"><i class="fa-solid fa-paper-plane"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Delete Confirmation Modal -->
+        <div id="delete-modal" class="confirm-modal-overlay hidden">
+            <div class="confirm-modal-content">
+                <i class="fa-solid fa-trash-can trash-icon"></i>
+                <h3>Delete Post?</h3>
+                <p>Are you sure you want to delete this post?</p>
+                <div class="confirm-actions">
+                    <button id="cancel-delete-btn" class="secondary-btn-box">No</button>
+                    <button id="confirm-delete-btn" class="danger-btn">Yes</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lightbox Zoom -->
+        <div id="lightbox-modal" class="lightbox hidden">
+            <span class="close-lightbox" id="close-lightbox-btn"><i class="fa-solid fa-xmark"></i></span>
+            <div id="lightbox-content-container" class="lightbox-content-container">
+                <!-- Video/Img injected here -->
+            </div>
+            <div id="lightbox-info" class="lightbox-info hidden">
+                <!-- Profile & Name & Desc injected here -->
+            </div>
+        </div>
+
+        <!-- Fixed Tabbar -->
+        <nav class="bottom-nav">
+            <a href="home.html" class="nav-item active"><i class="fa-solid fa-house"></i></a>
+            <a href="liked.html" class="nav-item"><i class="fa-solid fa-heart"></i></a>
+            <a href="upload.html" class="nav-item"><i class="fa-solid fa-square-plus"></i></a>
+            <a href="profile.html" class="nav-item"><i class="fa-solid fa-user"></i></a>
+        </nav>
+    </div>
+    <script type="module" src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Du Test</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-container glass-bg">
+        <header class="app-header" id="main-header">
+            <h2>Liked Posts</h2>
+        </header>
+
+        <main class="main-content">
+            <div id="posts-feed" class="posts-feed">
+               
+            </div>
+        </main>
+
+       
+        <div id="comments-modal" class="comments-modal-overlay hidden">
+            <div class="comments-modal-content glass-card">
+                <div class="modal-drag-handle" id="close-comments-btn"></div>
+                <h3 class="modal-title">Comments</h3>
+                <div id="comments-list" class="comments-list"></div>
+                <div class="add-comment-bar">
+                    <input type="text" id="comment-input" placeholder="Add a comment..." dir="auto">
+                    <button id="send-comment-btn"><i class="fa-solid fa-paper-plane"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <nav class="bottom-nav">
+            <a href="home.html" class="nav-item"><i class="fa-solid fa-house"></i></a>
+            <a href="liked.html" class="nav-item active"><i class="fa-solid fa-heart"></i></a>
+            <a href="upload.html" class="nav-item"><i class="fa-solid fa-square-plus"></i></a>
+            <a href="profile.html" class="nav-item"><i class="fa-solid fa-user"></i></a>
+        </nav>
+    </div>
+    <script type="module" src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Upload - Team Board</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header" id="main-header">
+            <h2>New Post</h2>
+            <button id="publish-btn" class="publish-icon-btn"><i class="fa-solid fa-paper-plane"></i></button>
+        </header>
+
+        <main class="main-content upload-page-content">
+            <div class="upload-area">
+                <div class="upload-flex-container">
+                    <textarea id="post-desc" placeholder="Write a caption..." dir="auto"></textarea>
+                    <div id="preview-container" class="preview-container hidden">
+                        <!-- Img / Video app.js thi avse -->
+                    </div>
+                </div>
+                
+                <div class="file-action">
+                    <input type="file" id="post-file" accept="image/*" multiple hidden>
+                    <div class="upload-options">
+                        <button class="upload-type-btn color-img active" data-type="image"><i class="fa-solid fa-images"></i> Photo</button>
+                        <button class="upload-type-btn color-vid" data-type="video"><i class="fa-solid fa-video"></i> Video</button>
+                        <button class="upload-type-btn color-reel" data-type="reel"><i class="fa-solid fa-clapperboard"></i> Reel</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <nav class="bottom-nav">
+            <a href="home.html" class="nav-item"><i class="fa-solid fa-house"></i></a>
+            <a href="liked.html" class="nav-item"><i class="fa-solid fa-heart"></i></a>
+            <a href="upload.html" class="nav-item active"><i class="fa-solid fa-square-plus"></i></a>
+            <a href="profile.html" class="nav-item"><i class="fa-solid fa-user"></i></a>
+        </nav>
+    </div>
+    <script type="module" src="app.js"></script>
+</body>
+</html>
