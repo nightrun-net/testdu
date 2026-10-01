@@ -65,13 +65,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
 
         loginBtn?.addEventListener('click', async () => {
-            const { error } = await supabase.auth.signInWithPassword({ email: emailInput.value, password: passInput.value });
+            const { error } = await supabase.auth.signInWithPassword({ email: emailInput.value.trim(), password: passInput.value });
             if (error) document.getElementById('auth-error').innerText = "Invalid credentials!";
             else window.location.href = 'home.html';
         });
 
         document.getElementById('signup-btn')?.addEventListener('click', async () => {
-            const { error } = await supabase.auth.signUp({ email: emailInput.value, password: passInput.value });
+            const { error } = await supabase.auth.signUp({ email: emailInput.value.trim(), password: passInput.value });
             if (error) document.getElementById('auth-error').innerText = error.message;
             else alert('Account created! Please Sign In.');
         });
@@ -451,7 +451,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         pubBtn?.addEventListener('click', async () => {
             const desc = document.getElementById('post-desc').value;
-            // دڵنیابوون كو فایلان راستەوخۆ ژ selectedFiles وەردگریت نەكو ژ fileInput ب تنێ
             const filesToUpload = selectedFiles.length > 0 ? selectedFiles : Array.from(fileInput.files || []).slice(0, 20); 
             
             if (!desc && filesToUpload.length === 0) return alert('Write something or select a file.');
@@ -467,16 +466,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                     for(let i = 0; i < filesToUpload.length; i++) {
                         let file = filesToUpload[i];
                         const fileExt = file.name.split('.').pop();
-                        // بکارئینانا Date.now() داكو چو جاران ناڤێن فایلان تێكەلی ئێك نەبن
                         const filePath = `${currentUser.id}/${Date.now()}_${i}.${fileExt}`;
                         
-                        // پشكنینا خەلەتییان زێدە كر بۆ ئاپلۆدكرنێ
                         const { data, error: uploadError } = await supabase.storage.from('media').upload(filePath, file, {
                             cacheControl: '3600',
                             upsert: false
                         });
                         
-                        if (uploadError) throw uploadError; // راوەستاندنا كۆدی ئەگەر خەلەتیەك هەبیت
+                        if (uploadError) throw uploadError; 
                         
                         const { data: publicUrlData } = supabase.storage.from('media').getPublicUrl(filePath);
                         mediaUrls.push(publicUrlData.publicUrl);
@@ -493,7 +490,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             } catch(err) {
                 pubBtn.innerHTML = '<i class="fa-solid fa-paper-plane"></i>';
                 pubBtn.disabled = false;
-                alert('Error uploading: ' + err.message); // نیشاندانا خەلەتیێ بۆ تە دا بزانی ئاریشە ل كیڤەیە
+                alert('Error uploading: ' + err.message); 
             }
         });
     }
