@@ -89,6 +89,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         };
 
         async function loadPosts() {
+            let myLikedIds = [];
+            if (currentUser) {
+                const { data: likesData } = await supabase
+                    .from('likes')
+                    .select('post_id')
+                    .eq('user_id', currentUser.id);
+                if (likesData) {
+                    myLikedIds = likesData.map(l => String(l.post_id));
+                }
+            }
+
             const { data: posts } = await supabase
                 .from('posts')
                 .select(`*, profiles:user_id(full_name, avatar_url), likes(user_id), comments(id)`)
@@ -97,15 +108,18 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (posts) {
                 window.currentLoadedPosts = posts; 
                 postsFeed.innerHTML = '';
+                
+                if (isLikedPage && myLikedIds.length === 0) {
+                    postsFeed.innerHTML = '<p style="text-align:center; margin-top: 50px; color: #888; font-family: Poppins;">چو پۆست نەهاتینە لایك كرن...</p>';
+                    return;
+                }
 
                 posts.forEach(post => {
-                    // پاراستنا كۆدی ژ Error ل دەمێ نەبوونا لایك یان كۆمێنتان
                     const safeLikes = Array.isArray(post.likes) ? post.likes : [];
                     const safeComments = Array.isArray(post.comments) ? post.comments : [];
                     
-                    const isLiked = currentUser ? safeLikes.some(like => like.user_id === currentUser.id) : false;
+                    const isLiked = myLikedIds.includes(String(post.id));
                     
-                    // فلتەركرنا پۆستان بۆ لاپەڕێ Liked
                     if (isLikedPage && !isLiked) return;
 
                     const postDate = new Date(post.created_at);
@@ -240,7 +254,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             let likesNum = parseInt(likesPart.replace(/[^0-9]/g, '')) || 0;
 
             if (currentlyLiked) {
-                // Rakkrna Like
                 btnElement.classList.remove('liked');
                 btnElement.innerHTML = '<i class="fa-regular fa-heart"></i>';
                 
@@ -252,7 +265,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                     document.getElementById(`post-${postId}`)?.remove();
                 }
             } else {
-                // Zedekrna Like
                 btnElement.classList.add('liked');
                 btnElement.innerHTML = '<i class="fa-solid fa-heart"></i>';
                 
@@ -439,7 +451,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         pubBtn?.addEventListener('click', async () => {
             const desc = document.getElementById('post-desc').value;
-            const filesToUpload = Array.from(fileInput.files || []).slice(0, 20); 
+            // دڵنیابوون كو فایلان راستەوخۆ ژ selectedFiles وەردگریت نەكو ژ fileInput ب تنێ
+            const filesToUpload = selectedFiles.length > 0 ? selectedFiles : Array.from(fileInput.files || []).slice(0, 20); 
             
             if (!desc && filesToUpload.length === 0) return alert('Write something or select a file.');
 
@@ -451,23 +464,36 @@ document.addEventListener('DOMContentLoaded', async () => {
                 let mediaType = 'image';
                 
                 if (filesToUpload.length > 0) {
-                    for(let file of filesToUpload) {
-                        const filePath = `${currentUser.id}/${Math.random()}.${file.name.split('.').pop()}`;
-                        await supabase.storage.from('media').upload(filePath, file);
-                        const { data } = supabase.storage.from('media').getPublicUrl(filePath);
-                        mediaUrls.push(data.publicUrl);
+                    for(let i = 0; i < filesToUpload.length; i++) {
+                        let file = filesToUpload[i];
+                        const fileExt = file.name.split('.').pop();
+                        // بکارئینانا Date.now() داكو چو جاران ناڤێن فایلان تێكەلی ئێك نەبن
+                        const filePath = `${currentUser.id}/${Date.now()}_${i}.${fileExt}`;
+                        
+                        // پشكنینا خەلەتییان زێدە كر بۆ ئاپلۆدكرنێ
+                        const { data, error: uploadError } = await supabase.storage.from('media').upload(filePath, file, {
+                            cacheControl: '3600',
+                            upsert: false
+                        });
+                        
+                        if (uploadError) throw uploadError; // راوەستاندنا كۆدی ئەگەر خەلەتیەك هەبیت
+                        
+                        const { data: publicUrlData } = supabase.storage.from('media').getPublicUrl(filePath);
+                        mediaUrls.push(publicUrlData.publicUrl);
                     }
                     mediaType = filesToUpload[0].type.startsWith('video') ? (window.selectedUploadType === 'reel' ? 'reel' : 'video') : 'image';
                 }
                 
                 const finalMediaUrl = mediaUrls.length > 0 ? mediaUrls.join(',') : null;
 
-                await supabase.from('posts').insert([{ user_id: currentUser.id, description: desc, media_url: finalMediaUrl, media_type: mediaType }]);
+                const { error: postError } = await supabase.from('posts').insert([{ user_id: currentUser.id, description: desc, media_url: finalMediaUrl, media_type: mediaType }]);
+                if (postError) throw postError;
+
                 window.location.href = 'home.html';
             } catch(err) {
                 pubBtn.innerHTML = '<i class="fa-solid fa-paper-plane"></i>';
                 pubBtn.disabled = false;
-                alert('Error: ' + err.message);
+                alert('Error uploading: ' + err.message); // نیشاندانا خەلەتیێ بۆ تە دا بزانی ئاریشە ل كیڤەیە
             }
         });
     }
@@ -493,8 +519,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 spinner.classList.remove('hidden'); 
                 
                 try {
-                    const filePath = `avatars/${currentUser.id}/${Math.random()}.${file.name.split('.').pop()}`;
-                    await supabase.storage.from('media').upload(filePath, file);
+                    const filePath = `avatars/${currentUser.id}/${Date.now()}.${file.name.split('.').pop()}`;
+                    
+                    const { error: uploadError } = await supabase.storage.from('media').upload(filePath, file);
+                    if (uploadError) throw uploadError;
+                    
                     const { data } = supabase.storage.from('media').getPublicUrl(filePath);
                     
                     await supabase.from('profiles').update({ avatar_url: data.publicUrl }).eq('id', currentUser.id);
