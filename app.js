@@ -97,9 +97,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (posts) {
                 window.currentLoadedPosts = posts; 
                 postsFeed.innerHTML = '';
+
                 posts.forEach(post => {
-                    const isLiked = post.likes.some(like => like.user_id === currentUser.id);
+                    // پاراستنا كۆدی ژ Error ل دەمێ نەبوونا لایك یان كۆمێنتان
+                    const safeLikes = Array.isArray(post.likes) ? post.likes : [];
+                    const safeComments = Array.isArray(post.comments) ? post.comments : [];
                     
+                    const isLiked = currentUser ? safeLikes.some(like => like.user_id === currentUser.id) : false;
+                    
+                    // فلتەركرنا پۆستان بۆ لاپەڕێ Liked
                     if (isLikedPage && !isLiked) return;
 
                     const postDate = new Date(post.created_at);
@@ -161,8 +167,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                     const avatar = post.profiles?.avatar_url || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
                     const name = post.profiles?.full_name || 'User';
-                    const isMyPost = post.user_id === currentUser.id;
-                    const commentsCount = post.comments ? post.comments.length : 0;
+                    const isMyPost = currentUser && post.user_id === currentUser.id;
+                    const commentsCount = safeComments.length;
                     
                     let shortDesc = (post.description || '').trim();
                     let descHTML = '';
@@ -192,7 +198,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 </button>
                             </div>
                             
-                            <div class="post-likes-count">${post.likes.length} Likes &bull; ${commentsCount} Comments</div>
+                            <div class="post-likes-count">${safeLikes.length} Likes &bull; ${commentsCount} Comments</div>
                             
                             ${post.description ? `
                                 <div class="post-desc-container">
@@ -204,6 +210,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                     `;
                     postsFeed.insertAdjacentHTML('beforeend', postHTML);
                 });
+
+                if (postsFeed.innerHTML === '') {
+                    postsFeed.innerHTML = '<div style="text-align:center; padding: 40px 20px; color: #888;">چو پۆست نەهاتینە دیتن...</div>';
+                }
             }
         }
         
@@ -221,16 +231,34 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         window.toggleLike = async (postId, btnElement) => {
             const currentlyLiked = btnElement.classList.contains('liked');
+            const card = btnElement.closest('.post-card');
+            const likesCountEl = card.querySelector('.post-likes-count');
+            
+            let currentText = likesCountEl.innerText || "";
+            let likesPart = currentText.split('•')[0] || "0 Likes";
+            let commentsPart = currentText.split('•')[1] || "0 Comments";
+            let likesNum = parseInt(likesPart.replace(/[^0-9]/g, '')) || 0;
+
             if (currentlyLiked) {
+                // Rakkrna Like
                 btnElement.classList.remove('liked');
                 btnElement.innerHTML = '<i class="fa-regular fa-heart"></i>';
+                
+                likesNum = Math.max(0, likesNum - 1);
+                likesCountEl.innerHTML = `${likesNum} Likes &bull; ${commentsPart.trim()}`;
+                
                 await supabase.from('likes').delete().match({ post_id: postId, user_id: currentUser.id });
                 if(isLikedPage) {
                     document.getElementById(`post-${postId}`)?.remove();
                 }
             } else {
+                // Zedekrna Like
                 btnElement.classList.add('liked');
                 btnElement.innerHTML = '<i class="fa-solid fa-heart"></i>';
+                
+                likesNum += 1;
+                likesCountEl.innerHTML = `${likesNum} Likes &bull; ${commentsPart.trim()}`;
+                
                 await supabase.from('likes').insert([{ post_id: postId, user_id: currentUser.id }]);
             }
         }
