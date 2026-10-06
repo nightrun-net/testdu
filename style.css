@@ -36,7 +36,7 @@ input:focus { border-color: #0072ff; box-shadow: 0 0 0 3px rgba(0, 114, 255, 0.1
 .post-options-btn { position: absolute; right: 15px; color: #111; font-size: 18px; padding: 5px; }
 
 .post-media { position: relative; background: transparent; display: block; width: 100%; }
-.post-media img { width: 100%; max-height: 600px; object-fit: contain; display: block; margin: 0 auto; }
+.post-media img { width: 100%; max-height: 600px; object-fit: cover; display: block; margin: 0 auto; }
 .normal-feed-video { width: 100%; max-height: 600px; object-fit: contain; }
 .reel-feed-video { width: 100%; aspect-ratio: 9/16; object-fit: cover; max-height: 80vh; }
 .video-click-wrapper { position: relative; width: 100%; cursor: pointer; display: flex; justify-content: center; background: #000; overflow: hidden; }
