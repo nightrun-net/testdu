@@ -15,6 +15,18 @@ const escapeHtml = (t) => {
     return t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
 };
 
+ 
+async function getSignedUrl(url) {
+    if (!url) return null;
+    let path = url;
+    const marker = '/object/public/media/';
+    if (url.includes(marker)) path = url.split(marker)[1];
+    if (path.startsWith('http')) return url;
+
+    const { data, error } = await supabase.storage.from('media').createSignedUrl(path, 60 * 60 * 24);
+    return data?.signedUrl || url;
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
     
     const currentPageStr = window.location.pathname.split('/').pop().toLowerCase();
@@ -65,13 +77,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
 
         loginBtn?.addEventListener('click', async () => {
-            const { error } = await supabase.auth.signInWithPassword({ email: emailInput.value.trim(), password: passInput.value });
+            const { error } = await supabase.auth.signInWithPassword({ email: emailInput.value, password: passInput.value });
             if (error) document.getElementById('auth-error').innerText = "Invalid credentials!";
             else window.location.href = 'home.html';
         });
 
         document.getElementById('signup-btn')?.addEventListener('click', async () => {
-            const { error } = await supabase.auth.signUp({ email: emailInput.value.trim(), password: passInput.value });
+            const { error } = await supabase.auth.signUp({ email: emailInput.value, password: passInput.value });
             if (error) document.getElementById('auth-error').innerText = error.message;
             else alert('Account created! Please Sign In.');
         });
@@ -114,13 +126,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                     return;
                 }
 
-                posts.forEach(post => {
+                for (const post of posts) {
                     const safeLikes = Array.isArray(post.likes) ? post.likes : [];
                     const safeComments = Array.isArray(post.comments) ? post.comments : [];
                     
                     const isLiked = myLikedIds.includes(String(post.id));
                     
-                    if (isLikedPage && !isLiked) return;
+                    if (isLikedPage && !isLiked) continue;
 
                     const postDate = new Date(post.created_at);
                     const day = postDate.getDate();
@@ -131,7 +143,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                     
                     let mediaHTML = '';
                     if (post.media_url) {
-                        const urls = post.media_url.split(','); 
+                        const rawUrls = post.media_url.split(','); 
+                        const urls = [];
+                        for (let u of rawUrls) {
+                            urls.push(await getSignedUrl(u));
+                        }
                         
                         if (post.media_type === 'image' && urls.length > 1) {
                             let gridImages = '';
@@ -179,7 +195,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                         }
                     }
 
-                    const avatar = post.profiles?.avatar_url || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+                    let avatar = await getSignedUrl(post.profiles?.avatar_url);
+                    avatar = avatar || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
                     const name = post.profiles?.full_name || 'User';
                     const isMyPost = currentUser && post.user_id === currentUser.id;
                     const commentsCount = safeComments.length;
@@ -223,7 +240,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         </div>
                     `;
                     postsFeed.insertAdjacentHTML('beforeend', postHTML);
-                });
+                }
 
                 if (postsFeed.innerHTML === '') {
                     postsFeed.innerHTML = '<div style="text-align:center; padding: 40px 20px; color: #888;">چو پۆست نەهاتینە دیتن...</div>';
@@ -306,15 +323,20 @@ document.addEventListener('DOMContentLoaded', async () => {
             closeLightboxBtn.style.zIndex = '20010';
         });
         
-        window.openZoom = (postId) => {
+        window.openZoom = async (postId) => {
             const post = window.currentLoadedPosts.find(p => p.id === postId);
             if(!post) return; 
 
-            const av = post.profiles?.avatar_url || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+            let av = await getSignedUrl(post.profiles?.avatar_url);
+            av = av || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
             const name = post.profiles?.full_name || 'User';
             
             if (post.media_type === 'image') {
-                const urls = post.media_url.split(','); 
+                const rawUrls = post.media_url.split(','); 
+                const urls = [];
+                for (let u of rawUrls) {
+                    urls.push(await getSignedUrl(u));
+                }
                 
                 if (urls.length > 1) {
                     sliderCounterTop.innerText = `1/${urls.length}`;
@@ -334,7 +356,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             } else {
                 const vidClass = post.media_type === 'reel' ? 'zoom-reel-video' : 'zoom-normal-video';
-                lightboxContainer.innerHTML = `<video id="zoom-video" class="${vidClass}" src="${post.media_url}" autoplay loop playsinline></video>`;
+                const signedVidUrl = await getSignedUrl(post.media_url);
+                lightboxContainer.innerHTML = `<video id="zoom-video" class="${vidClass}" src="${signedVidUrl}" autoplay loop playsinline></video>`;
                 
                 setTimeout(() => {
                     const vid = document.getElementById('zoom-video');
@@ -383,15 +406,18 @@ document.addEventListener('DOMContentLoaded', async () => {
             const listEl = document.getElementById('comments-list');
             const { data: comments } = await supabase.from('comments').select('*, profiles:user_id(full_name, avatar_url)').eq('post_id', postId).order('created_at', { ascending: true });
             
-            listEl.innerHTML = comments.map(c => {
-                const av = c.profiles?.avatar_url || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+            const commentsHtml = await Promise.all(comments.map(async c => {
+                let av = await getSignedUrl(c.profiles?.avatar_url);
+                av = av || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
                 return `<div class="comment-item" dir="auto">
                     <img src="${av}">
                     <div class="comment-text-box">
                         <strong>${c.profiles?.full_name || 'User'}</strong>${c.comment_text}
                     </div>
                 </div>`;
-            }).join('');
+            }));
+            
+            listEl.innerHTML = commentsHtml.join('');
         }
 
         document.getElementById('send-comment-btn')?.addEventListener('click', async () => {
@@ -473,10 +499,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                             upsert: false
                         });
                         
-                        if (uploadError) throw uploadError; 
+                        if (uploadError) throw uploadError;
                         
-                        const { data: publicUrlData } = supabase.storage.from('media').getPublicUrl(filePath);
-                        mediaUrls.push(publicUrlData.publicUrl);
+                        
+                        mediaUrls.push(filePath);
                     }
                     mediaType = filesToUpload[0].type.startsWith('video') ? (window.selectedUploadType === 'reel' ? 'reel' : 'video') : 'image';
                 }
@@ -490,7 +516,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             } catch(err) {
                 pubBtn.innerHTML = '<i class="fa-solid fa-paper-plane"></i>';
                 pubBtn.disabled = false;
-                alert('Error uploading: ' + err.message); 
+                alert('Error uploading: ' + err.message);
             }
         });
     }
@@ -498,7 +524,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (isProfilePage) {
         if (currentProfile) {
             document.getElementById('profile-name-display').innerText = currentProfile.full_name || 'User';
-            if(currentProfile.avatar_url) document.getElementById('profile-img-preview').src = currentProfile.avatar_url;
+            if(currentProfile.avatar_url) {
+               
+                document.getElementById('profile-img-preview').src = await getSignedUrl(currentProfile.avatar_url);
+            }
         }
 
         const { data: myPosts } = await supabase.from('posts').select('id').eq('user_id', currentUser.id);
@@ -521,10 +550,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const { error: uploadError } = await supabase.storage.from('media').upload(filePath, file);
                     if (uploadError) throw uploadError;
                     
-                    const { data } = supabase.storage.from('media').getPublicUrl(filePath);
                     
-                    await supabase.from('profiles').update({ avatar_url: data.publicUrl }).eq('id', currentUser.id);
-                    document.getElementById('profile-img-preview').src = data.publicUrl;
+                    await supabase.from('profiles').update({ avatar_url: filePath }).eq('id', currentUser.id);
+                    document.getElementById('profile-img-preview').src = await getSignedUrl(filePath);
                 } catch(err) {
                     alert('Error updating profile picture: ' + err.message);
                 } finally {
