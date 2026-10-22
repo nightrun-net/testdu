@@ -1,69 +1,82 @@
-<!DOCTYPE html>
+
+<!doctype html>
 <html lang="en">
-<head>
+  <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DuTest</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="theme-color" content="#102b57"><title>Dugital</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
-<body>
-    <div class="app-container">
-        <header class="app-header" id="main-header">
-            <h2>Du Test</h2>
-        </header>
-
-        <main class="main-content">
-            <div id="posts-feed" class="posts-feed">
-             
-            </div>
-        </main>
-
-       
-        <div id="comments-modal" class="comments-modal-overlay hidden">
-            <div class="comments-modal-content glass-card" id="comments-content-box">
-                <button id="close-comments-icon" class="close-icon-btn"><i class="fa-solid fa-xmark"></i></button>
-                <h3 class="modal-title">Comments</h3>
-                <div id="comments-list" class="comments-list"></div>
-                <div class="add-comment-bar">
-                    <input type="text" id="comment-input" placeholder="Add a comment..." dir="auto">
-                    <button id="send-comment-btn"><i class="fa-solid fa-paper-plane"></i></button>
-                </div>
-            </div>
-        </div>
-
-       
-        <div id="delete-modal" class="confirm-modal-overlay hidden">
-            <div class="confirm-modal-content">
-                <i class="fa-solid fa-trash-can trash-icon"></i>
-                <h3>Delete Post?</h3>
-                <p>Are you sure you want to delete this post?</p>
-                <div class="confirm-actions">
-                    <button id="cancel-delete-btn" class="secondary-btn-box">No</button>
-                    <button id="confirm-delete-btn" class="danger-btn">Yes</button>
-                </div>
-            </div>
-        </div>
-
-        
-        <div id="lightbox-modal" class="lightbox hidden">
-            <span class="close-lightbox" id="close-lightbox-btn"><i class="fa-solid fa-xmark"></i></span>
-            <div id="lightbox-content-container" class="lightbox-content-container">
-              
-            </div>
-            <div id="lightbox-info" class="lightbox-info hidden">
-              
-            </div>
-        </div>
-
-        <!-- Fixed Tabbar -->
-        <nav class="bottom-nav">
-            <a href="home.html" class="nav-item active"><i class="fa-solid fa-house"></i></a>
-           
-            <a href="upload.html" class="nav-item"><i class="fa-solid fa-square-plus"></i></a>
-            <a href="profile.html" class="nav-item"><i class="fa-solid fa-user"></i></a>
-        </nav>
+  </head>
+  <body class="app-body home-page">
+    <div class="page-loader is-visible" id="dugital-loader" role="status" aria-live="polite" aria-label="Loading Dugital">
+      <div class="loader-inner">
+        <div class="loader-emblem"><img src="news.PNG" alt=""><span class="orbit orbit-a"></span><span class="orbit orbit-b"></span>
+        </div><strong>Dugital</strong><span class="loader-caption" id="loader-caption">Loading your stories...</span><span class="loading-progress"></span>
+      </div>
     </div>
+    <div class="app-container">
+      <header class="app-header" id="main-header"><a class="header-brand" href="home.html"><img src="news.PNG" alt="News logo"><span><b>Dugital</b><small>STORIES THAT MATTER</small></span></a>
+        <div class="header-right"><span class="header-label">Latest stories</span><button class="menu-toggle" type="button" aria-label="Open navigation" aria-expanded="false" aria-controls="site-nav"><i class="fa-solid fa-bars" aria-hidden="true"></i></button>
+        </div>
+      </header>
+      <nav class="bottom-nav" id="site-nav" aria-label="Main navigation"><a href="home.html" class="nav-item active"><i class="fa-solid fa-house"></i><span>Home</span></a><a href="liked.html" class="nav-item "><i class="fa-solid fa-heart"></i><span>Liked</span></a><a href="upload.html" class="nav-item "><i class="fa-solid fa-square-plus"></i><span>Create post</span></a><a href="profile.html" class="nav-item "><i class="fa-solid fa-user"></i><span>Profile</span></a>
+      </nav>
+      <main class="main-content">
+        <section class="page-hero">
+          <div><span class="eyebrow">DUGITAL / NEWS</span>
+            <h1>Latest stories</h1>
+            <p>Discover the news that connects us.</p>
+          </div><a class="hero-action" href="upload.html"><i class="fa-solid fa-plus"></i> Create post</a>
+        </section>
+        <div class="feed-layout">
+          <section class="feed-column">
+            <div class="feed-heading">
+              <h2><i class="fa-solid fa-layer-group"></i> Latest stories</h2><span>Latest from the community</span>
+            </div>
+            <div id="posts-feed" class="posts-feed">
+              <div class="loading-state">Loading stories...</div>
+            </div>
+          </section>
+          <aside class="feed-aside">
+            <div class="aside-panel"><img src="news.PNG" alt="News">
+              <h3>Welcome to Dugital</h3>
+              <p>Discover stories. Share ideas. Stay informed.</p><a href="upload.html">Share a story <i class="fa-solid fa-arrow-right"></i></a>
+            </div>
+          </aside>
+        </div>
+      </main>
+      <div id="comments-modal" class="comments-modal-overlay hidden">
+        <div class="comments-modal-content glass-card"><button id="close-comments-icon" class="close-icon-btn" aria-label="Close comments"><i class="fa-solid fa-xmark"></i></button>
+          <h3 class="modal-title">Comments</h3>
+          <div id="comments-list" class="comments-list"></div>
+          <div class="add-comment-bar"><input id="comment-input" placeholder="Write a comment..." dir="auto"><button id="send-comment-btn" aria-label="Send comment"><i class="fa-solid fa-paper-plane"></i></button>
+          </div>
+        </div>
+      </div>
+      <div id="delete-modal" class="confirm-modal-overlay hidden">
+        <div class="confirm-modal-content"><i class="fa-solid fa-trash-can trash-icon"></i>
+          <h3>Delete post?</h3>
+          <p>This post will be permanently deleted.</p>
+          <div class="confirm-actions"><button id="cancel-delete-btn" class="secondary-btn-box">Cancel</button><button id="confirm-delete-btn" class="danger-btn">Delete</button>
+          </div>
+        </div>
+      </div>
+      <div id="edit-modal" class="confirm-modal-overlay hidden">
+        <div class="confirm-modal-content edit-dialog">
+          <h3>Edit post</h3>
+          <p>Update your post caption.</p><textarea id="edit-post-desc" rows="6" dir="auto" placeholder="Write a caption..."></textarea>
+          <p id="edit-post-error" class="error-msg"></p>
+          <div class="confirm-actions"><button id="cancel-edit-btn" class="secondary-btn-box">Cancel</button><button id="save-edit-btn" class="primary-btn">Save changes</button>
+          </div>
+        </div>
+      </div>
+      <div id="lightbox-modal" class="lightbox hidden"><button class="close-lightbox" id="close-lightbox-btn" type="button" aria-label="Close image viewer" title="Close viewer"><i class="fa-solid fa-xmark"></i></button>
+        <div id="lightbox-content-container" class="lightbox-content-container"></div>
+        <div id="lightbox-info" class="lightbox-info hidden"></div>
+      </div>
+    </div>
+    <script src="ui.js" defer></script>
     <script type="module" src="app.js"></script>
-</body>
+  </body>
 </html>
