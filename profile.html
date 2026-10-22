@@ -1,48 +1,54 @@
-<!DOCTYPE html>
+
+<!doctype html>
 <html lang="en">
-<head>
+  <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Du Test</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="theme-color" content="#102b57"><title>Dugital</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
-<body>
-    <div class="app-container glass-bg">
-        <header class="app-header" id="main-header">
-            <h2>Profile</h2>
-        </header>
-
-        <main class="main-content">
-            <div class="profile-header-card glass-card">
-                <div class="profile-avatar-wrapper">
-                    
-                    <label for="profile-upload">
-                        <img id="profile-img-preview" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="profile-avatar">
-                    </label>
-                    <input type="file" id="profile-upload" accept="image/*" hidden>
-                    <div id="upload-spinner" class="spinner-overlay hidden"><i class="fa-solid fa-spinner fa-spin"></i></div>
-                </div>
-                
-                <h3 id="profile-name-display" class="user-display-name">Loading...</h3>
-                
-                <div class="stats-row">
-                    <div class="stat-box">
-                        <span id="user-post-count" class="stat-num">0</span>
-                        <span class="stat-label">Posts</span>
-                    </div>
-                </div>
-
-                <button id="logout-btn" class="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Sign Out</button>
-            </div>
-        </main>
-
-        <nav class="bottom-nav">
-            <a href="home.html" class="nav-item"><i class="fa-solid fa-house"></i></a>
-            <a href="upload.html" class="nav-item"><i class="fa-solid fa-square-plus"></i></a>
-            <a href="profile.html" class="nav-item active"><i class="fa-solid fa-user"></i></a>
-        </nav>
+  </head>
+  <body class="app-body">
+    <div class="page-loader is-visible" id="dugital-loader" role="status" aria-live="polite" aria-label="Loading Dugital">
+      <div class="loader-inner">
+        <div class="loader-emblem"><img src="news.PNG" alt=""><span class="orbit orbit-a"></span><span class="orbit orbit-b"></span>
+        </div><strong>Dugital</strong><span class="loader-caption" id="loader-caption">Loading your stories...</span><span class="loading-progress"></span>
+      </div>
     </div>
+    <div class="app-container">
+      <header class="app-header" id="main-header"><a class="header-brand" href="home.html"><img src="news.PNG" alt="News logo"><span><b>Dugital</b><small>STORIES THAT MATTER</small></span></a>
+        <div class="header-right"><span class="header-label">Profile</span><button class="menu-toggle" type="button" aria-label="Open navigation" aria-expanded="false" aria-controls="site-nav"><i class="fa-solid fa-bars" aria-hidden="true"></i></button>
+        </div>
+      </header>
+      <nav class="bottom-nav" id="site-nav" aria-label="Main navigation"><a href="home.html" class="nav-item "><i class="fa-solid fa-house"></i><span>Home</span></a><a href="liked.html" class="nav-item "><i class="fa-solid fa-heart"></i><span>Liked</span></a><a href="upload.html" class="nav-item "><i class="fa-solid fa-square-plus"></i><span>Create post</span></a><a href="profile.html" class="nav-item active"><i class="fa-solid fa-user"></i><span>Profile</span></a>
+      </nav>
+      <main class="main-content">
+        <section class="page-hero">
+          <div><span class="eyebrow">ACCOUNT / PROFILE</span>
+            <h1>Your profile</h1>
+            <p>Manage your presence in the Dugital community.</p>
+          </div>
+        </section>
+        <section class="profile-header-card glass-card">
+          <div class="profile-cover"><span>DUGITAL COMMUNITY</span>
+          </div>
+          <div class="profile-details">
+            <div class="profile-avatar-wrapper"><label for="profile-upload" title="Change profile picture"><img id="profile-img-preview" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="profile-avatar" alt="Profile photo"><span class="avatar-edit"><i class="fa-solid fa-camera"></i></span></label><input type="file" id="profile-upload" accept="image/*" hidden>
+              <div id="upload-spinner" class="spinner-overlay hidden"><i class="fa-solid fa-spinner fa-spin"></i>
+              </div>
+            </div><span class="eyebrow">YOUR ACCOUNT</span>
+            <h2 id="profile-name-display" class="user-display-name">Loading...</h2>
+            <p>Your stories, your voice, your space.</p>
+            <div class="stats-row">
+              <div class="stat-box"><span id="user-post-count" class="stat-num">0</span><span class="stat-label">Published posts</span>
+              </div>
+            </div><button id="logout-btn" class="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Sign Out</button>
+          </div>
+        </section>
+      </main>
+    </div>
+    <script src="ui.js" defer></script>
     <script type="module" src="app.js"></script>
-</body>
+  </body>
 </html>
+
