@@ -53,6 +53,18 @@ function escapeHtml(value) {
     .replace(/'/g, '&#039;');
 }
 
+// Display-only text cleanup: keep paragraphs, remove excessive empty lines.
+// Saved post descriptions in Supabase are never modified.
+function normalizeDisplayDescription(value) {
+  return String(value ?? '')
+    .replace(/\r\n?/g, '\n')
+    .split('\n')
+    .map(line => line.trim())
+    .join('\n')
+    .replace(/\n{2,}/g, '\n')
+    .trim();
+}
+
 function withTimeout(task, ms, label) {
   let timer;
 
@@ -922,29 +934,17 @@ document.addEventListener(
             safeComments.length;
 
           const shortDesc =
-            String(post.description || '').trim();
+            normalizeDisplayDescription(post.description);
 
           let descHTML = '';
 
           if (shortDesc.length > 200) {
             const truncated =
-              shortDesc.substring(0, 200) + '...';
+              Array.from(shortDesc).slice(0, 200).join('') + '...';
 
-            descHTML = `
-              <span class="desc-text"
-                data-full="${escapeHtml(shortDesc)}"
-                data-short="${escapeHtml(truncated)}">
-                ${escapeHtml(truncated)}
-              </span>
-              <button class="read-more-btn"
-                data-action="toggle-description">
-                more
-              </button>`;
+            descHTML = `<span class="desc-text" data-full="${escapeHtml(shortDesc)}" data-short="${escapeHtml(truncated)}">${escapeHtml(truncated)}</span> <button class="read-more-btn" data-action="toggle-description">more</button>`;
           } else if (shortDesc.length > 0) {
-            descHTML = `
-              <span class="desc-text">
-                ${escapeHtml(shortDesc)}
-              </span>`;
+            descHTML = `<span class="desc-text">${escapeHtml(shortDesc)}</span>`;
           }
 
           // POST HTML
@@ -1063,9 +1063,10 @@ document.addEventListener(
       event?.stopPropagation();
 
       const textSpan =
+        button.closest('.lightbox-caption')?.querySelector('.desc-text') ||
         button.previousElementSibling;
 
-      if (!textSpan) return;
+      if (!textSpan || !textSpan.classList.contains('desc-text')) return;
 
       const isCollapsed =
         button.innerText.trim().toLowerCase() !==
@@ -1579,47 +1580,34 @@ document.addEventListener(
         }
       }
 
-      const desc = String(
-        post.description || ''
-      ).trim();
-
+      // The caption stays visible in the viewer even for long RTL text.
+      const desc = normalizeDisplayDescription(post.description);
       const codepoints = Array.from(desc);
+      const hasLongCaption = codepoints.length > 180;
+      const preview = hasLongCaption
+        ? codepoints.slice(0, 180).join('').trimEnd() + '…'
+        : desc;
 
-      let zoomDescHTML = '';
-
-      if (codepoints.length > 30) {
-        const preview =
-          codepoints
-            .slice(0, 30)
-            .join('')
-            .trimEnd() + '…';
-
-        zoomDescHTML = `
-          <span class="desc-text"
-            data-full="${escapeHtml(desc)}"
-            data-short="${escapeHtml(preview)}">
-            ${escapeHtml(preview)}
-          </span>
-          <button
-            class="read-more-btn"
-            data-action="toggle-description">
-            more
-          </button>`;
-      } else if (desc) {
-        zoomDescHTML = `
-          <span class="desc-text">
-            ${escapeHtml(desc)}
-          </span>`;
-      }
-
+      infoOverlay.classList.add('dugital-caption-fixed');
       infoOverlay.innerHTML = `
         <div class="lightbox-user">
-          <img src="${escapeHtml(avatar)}">
+          <img src="${escapeHtml(avatar)}" alt="">
           <strong>${escapeHtml(name)}</strong>
         </div>
-        ${zoomDescHTML
-          ? `<div class="lightbox-description-scroll"><div class="lightbox-desc" dir="auto">${zoomDescHTML}</div></div>`
-          : ''}`;
+        ${desc ? `
+          <div class="lightbox-caption">
+            <div class="lightbox-description-scroll">
+              <div class="lightbox-desc" dir="auto">
+                <span class="desc-text"
+                  data-full="${escapeHtml(desc)}"
+                  data-short="${escapeHtml(preview)}">${escapeHtml(preview)}</span>
+              </div>
+            </div>
+            ${hasLongCaption ? `
+              <button class="read-more-btn" type="button"
+                data-action="toggle-description" aria-expanded="false">more</button>
+            ` : ''}
+          </div>` : ''}`;
 
       infoOverlay.classList.remove('hidden');
     };
