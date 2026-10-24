@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="en">
   <head>
@@ -6,6 +5,194 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="theme-color" content="#102b57"><title>Dugital</title>
     <link rel="stylesheet" href="style.css">
+    <!-- Only the two requested description fixes; no other site styles changed. -->
+    <style id="dugital-description-responsive-fix">
+      /* FIX 1: Feed description sits directly beneath the author. */
+      .home-page .post-desc-container {
+        display: block;
+        height: auto;
+        min-height: 0;
+        min-width: 0;
+        margin: 0;
+        padding: 4px clamp(15px, 2.4vw, 26px) 18px;
+      }
+      .home-page .post-desc-container .post-author {
+        display: block;
+        margin: 0 0 3px;
+        line-height: 1.4;
+      }
+      .home-page .post-desc-content {
+        display: block;
+        width: 100%;
+        min-width: 0;
+        height: auto;
+        min-height: 0;
+        margin: 0;
+        padding: 0;
+        /* IMPORTANT: template whitespace must not become empty lines. */
+        white-space: normal;
+        overflow-wrap: anywhere;
+        word-break: normal;
+        font-size: clamp(14px, 1.2vw, 17px);
+        line-height: 1.55;
+        text-align: start;
+      }
+      .home-page .post-desc-content .desc-text {
+        white-space: pre-line;
+        overflow-wrap: anywhere;
+        line-height: inherit;
+      }
+      .home-page .post-desc-content .read-more-btn {
+        display: inline-block;
+        min-height: 26px;
+        padding: 0 3px;
+        margin-inline-start: 6px;
+        vertical-align: baseline;
+      }
+
+      /* FIX 2: Caption stays at photo bottom with almost no blur.
+         Expanding "more" grows the caption UP, without moving the image. */
+      .home-page .lightbox-info.dugital-caption-fixed {
+        position: absolute;
+        top: auto;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 20020;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        align-items: stretch;
+        gap: 7px;
+        max-height: min(32dvh, 230px);
+        padding: 16px clamp(15px, 3vw, 42px)
+          calc(14px + env(safe-area-inset-bottom));
+        color: #fff;
+        background: linear-gradient(to bottom,
+          rgba(5, 13, 27, 0) 0%,
+          rgba(5, 13, 27, .14) 27%,
+          rgba(5, 13, 27, .51) 63%,
+          rgba(5, 13, 27, .79) 100%);
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+        overflow: hidden;
+        transition: max-height .3s ease, background .3s ease;
+      }
+      .home-page .lightbox-info.dugital-caption-fixed.is-expanded {
+        max-height: min(72dvh, 650px);
+        background: linear-gradient(to bottom,
+          rgba(5, 13, 27, .03) 0%,
+          rgba(5, 13, 27, .36) 28%,
+          rgba(5, 13, 27, .73) 72%,
+          rgba(5, 13, 27, .86) 100%);
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+      }
+      .home-page .lightbox-info.dugital-caption-fixed .lightbox-user {
+        width: 100%;
+        max-width: 900px;
+        min-width: 0;
+        margin: 0 auto;
+        flex: 0 0 auto;
+      }
+      .home-page .lightbox-info.dugital-caption-fixed .lightbox-caption {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 4px;
+        width: 100%;
+        max-width: 900px;
+        min-width: 0;
+        min-height: 0;
+        margin: 0 auto;
+        overflow: hidden;
+      }
+      .home-page .lightbox-info.dugital-caption-fixed .lightbox-description-scroll {
+        flex: 0 1 auto;
+        width: 100%;
+        min-height: 0;
+        max-height: min(9dvh, 76px);
+        overflow: hidden;
+        scrollbar-width: thin;
+      }
+      .home-page .lightbox-info.dugital-caption-fixed.is-expanded .lightbox-description-scroll {
+        max-height: min(49dvh, 470px);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
+      }
+      .home-page .lightbox-info.dugital-caption-fixed .lightbox-desc {
+        max-height: none;
+        margin: 0;
+        padding: 0;
+        overflow: visible;
+        white-space: normal;
+        overflow-wrap: anywhere;
+        word-break: normal;
+        text-align: start;
+        line-height: 1.52;
+        font-size: clamp(13px, 1.15vw, 16px);
+        color: #fff;
+      }
+      .home-page .lightbox-info.dugital-caption-fixed .lightbox-desc .desc-text {
+        white-space: pre-line;
+      }
+      .home-page .lightbox-info.dugital-caption-fixed .lightbox-caption > .read-more-btn {
+        flex: none;
+        align-self: flex-start;
+        display: inline-flex;
+        min-height: 30px;
+        margin: 2px 0 0;
+        padding: 5px 11px;
+        border-radius: 9px;
+        color: #e3efff;
+        background: rgba(55, 105, 166, .32);
+      }
+      @media (max-width: 750px) {
+        .home-page .post-desc-container {
+          padding: 4px 15px 16px;
+        }
+        .home-page .post-desc-content {
+          font-size: 14px;
+          line-height: 1.55;
+        }
+        .home-page .lightbox-info.dugital-caption-fixed {
+          max-height: min(36dvh, 245px);
+          padding: 12px 15px calc(12px + env(safe-area-inset-bottom));
+          gap: 5px;
+        }
+        .home-page .lightbox-info.dugital-caption-fixed.is-expanded {
+          max-height: min(75dvh, 570px);
+        }
+        .home-page .lightbox-info.dugital-caption-fixed .lightbox-description-scroll {
+          max-height: min(10dvh, 70px);
+        }
+        .home-page .lightbox-info.dugital-caption-fixed.is-expanded .lightbox-description-scroll {
+          max-height: min(48dvh, 410px);
+        }
+        .home-page .lightbox-info.dugital-caption-fixed .lightbox-desc {
+          font-size: 13px;
+          line-height: 1.5;
+        }
+      }
+      @media (max-height: 480px) and (orientation: landscape) {
+        .home-page .lightbox-info.dugital-caption-fixed {
+          max-height: 55dvh;
+          padding: 8px 12px calc(8px + env(safe-area-inset-bottom));
+        }
+        .home-page .lightbox-info.dugital-caption-fixed.is-expanded {
+          max-height: 86dvh;
+        }
+        .home-page .lightbox-info.dugital-caption-fixed.is-expanded .lightbox-description-scroll {
+          max-height: 52dvh;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .home-page .lightbox-info.dugital-caption-fixed { transition: none; }
+      }
+    </style>
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   </head>
   <body class="app-body home-page">
