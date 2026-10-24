@@ -3,8 +3,7 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 const supabaseUrl = 'https://vycidctybcihudvuydwj.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ5Y2lkY3R5YmNpaHVkdnV5ZHdqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA0NDE5MjMsImV4cCI6MjEwNjAxNzkyM30.WtaUyVNEBdSmodPCNFGM9X_ArW07QcemmyQIGQeLmyg';
 
-// This file runs in browsers. Only anon or sb_publishable keys belong here.
-// NEVER insert service_role, sb_secret, database passwords, or PATs.
+
 function assertPublicSupabaseKey(key) {
   if (typeof key !== 'string' || !key.trim()) {
     throw new Error('Missing public Supabase API key.');
