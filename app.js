@@ -3,7 +3,8 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 const supabaseUrl = 'https://vycidctybcihudvuydwj.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ5Y2lkY3R5YmNpaHVkdnV5ZHdqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA0NDE5MjMsImV4cCI6MjEwNjAxNzkyM30.WtaUyVNEBdSmodPCNFGM9X_ArW07QcemmyQIGQeLmyg';
 
-
+// This file runs in browsers. Only anon or sb_publishable keys belong here.
+// NEVER insert service_role, sb_secret, database passwords, or PATs.
 function assertPublicSupabaseKey(key) {
   if (typeof key !== 'string' || !key.trim()) {
     throw new Error('Missing public Supabase API key.');
@@ -52,7 +53,8 @@ function escapeHtml(value) {
     .replace(/'/g, '&#039;');
 }
 
-
+// Display-only text cleanup: keep paragraphs, remove excessive empty lines.
+// Saved post descriptions in Supabase are never modified.
 function normalizeDisplayDescription(value) {
   return String(value ?? '')
     .replace(/\r\n?/g, '\n')
@@ -106,7 +108,7 @@ function isValidMediaPath(value) {
   );
 }
 
-
+// PRIVATE MEDIA SIGNED URL
 
 const signedUrlCache = new Map();
 
@@ -178,7 +180,7 @@ async function getSignedUrl(rawPath) {
   return promise;
 }
 
-
+// MEDIA ERROR HANDLING
 
 const mediaRetries = new WeakMap();
 
@@ -325,7 +327,7 @@ document.addEventListener(
   const isProfilePage =
     currentPageStr.includes('profile');
 
-  
+  // SAFE EVENT DELEGATION
 
   document.addEventListener('click', event => {
     const eventTarget = event.target;
@@ -376,7 +378,7 @@ document.addEventListener(
     }
   });
 
- 
+  // AUTHENTICATION
 
   window.DugitalLoader?.show(
     isIndexPage
@@ -462,7 +464,7 @@ document.addEventListener(
     });
   }
 
-  
+  // LOGIN SCREEN
 
   if (isIndexPage) {
     window.DugitalLoader?.hide();
@@ -515,7 +517,7 @@ document.addEventListener(
           return;
         }
 
-        
+        // Cloudflare Turnstile: require a valid token before signing in.
         const captchaToken = window.turnstile?.getResponse();
         if (!captchaToken) {
           if (errorNode) {
@@ -562,13 +564,13 @@ document.addEventListener(
       }
     );
 
-    
+    // DISABLE REGISTRATION UI
     document.querySelectorAll(
       '#signup-btn, [data-auth="signup"]'
     ).forEach(element => element.remove());
   }
 
-  
+  // HOME AND LIKED POSTS
 
   if (isHomePage || isLikedPage) {
     const postsFeed =
@@ -595,7 +597,7 @@ document.addEventListener(
       }
     };
 
-    
+    // LOAD POSTS
 
     async function loadPosts() {
       window.DugitalLoader?.show(
@@ -632,7 +634,9 @@ document.addEventListener(
             ).catch(() => ({ data: [] }))
           : Promise.resolve({ data: [] });
 
-        
+        // Try the original relational feed query first. If a related table
+        // has a broken relationship/grant, use a plain posts query so the
+        // entire news feed does not disappear. Backend RLS still applies.
         let { data: posts, error: postsError } = await postsRequest;
         if (postsError) {
           console.warn('[Dugital] Feed relation query failed:', {
@@ -656,7 +660,7 @@ document.addEventListener(
             throw fallback.error;
           }
           posts = fallback.data || [];
-          
+          // Optional enrichment. Failure here must NOT hide existing posts.
           const authorIds = [...new Set(posts.map(p => p.user_id).filter(Boolean))];
           const postIds = posts.map(p => p.id);
           const profileMap = new Map();
@@ -808,7 +812,7 @@ document.addEventListener(
 
           let mediaHTML = '';
 
-          
+          // SAFE MEDIA RENDERING
 
           if (post.media_url) {
             const rawUrls = String(
@@ -955,7 +959,7 @@ document.addEventListener(
             descHTML = `<span class="desc-text">${escapeHtml(shortDesc)}</span>`;
           }
 
-          
+          // POST HTML
 
           const postHTML = `
             <div class="post-card"
@@ -1312,7 +1316,7 @@ document.addEventListener(
       }
     );
 
-    
+    // DELETE POSTS
 
     const deleteModal =
       document.getElementById(
