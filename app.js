@@ -52,8 +52,7 @@ function escapeHtml(value) {
     .replace(/'/g, '&#039;');
 }
 
-// Display-only text cleanup: keep paragraphs, remove excessive empty lines.
-// Saved post descriptions in Supabase are never modified.
+
 function normalizeDisplayDescription(value) {
   return String(value ?? '')
     .replace(/\r\n?/g, '\n')
@@ -107,7 +106,7 @@ function isValidMediaPath(value) {
   );
 }
 
-// PRIVATE MEDIA SIGNED URL
+
 
 const signedUrlCache = new Map();
 
@@ -179,7 +178,7 @@ async function getSignedUrl(rawPath) {
   return promise;
 }
 
-// MEDIA ERROR HANDLING
+
 
 const mediaRetries = new WeakMap();
 
@@ -326,7 +325,7 @@ document.addEventListener(
   const isProfilePage =
     currentPageStr.includes('profile');
 
-  // SAFE EVENT DELEGATION
+  
 
   document.addEventListener('click', event => {
     const eventTarget = event.target;
@@ -377,7 +376,7 @@ document.addEventListener(
     }
   });
 
-  // AUTHENTICATION
+ 
 
   window.DugitalLoader?.show(
     isIndexPage
@@ -463,7 +462,7 @@ document.addEventListener(
     });
   }
 
-  // LOGIN SCREEN
+  
 
   if (isIndexPage) {
     window.DugitalLoader?.hide();
@@ -516,6 +515,16 @@ document.addEventListener(
           return;
         }
 
+        
+        const captchaToken = window.turnstile?.getResponse();
+        if (!captchaToken) {
+          if (errorNode) {
+            errorNode.textContent =
+              'Complete the security check before signing in.';
+          }
+          return;
+        }
+
         loginBtn.disabled = true;
 
         window.DugitalLoader?.show(
@@ -526,7 +535,8 @@ document.addEventListener(
           const { error } = await withTimeout(
             supabase.auth.signInWithPassword({
               email: emailInput.value.trim(),
-              password: passInput.value
+              password: passInput.value,
+              options: { captchaToken }
             }),
             18000,
             'Sign in'
@@ -545,19 +555,20 @@ document.addEventListener(
               error.message || 'Could not sign in.';
           }
 
+          window.turnstile?.reset();
           window.DugitalLoader?.hide();
           loginBtn.disabled = false;
         }
       }
     );
 
-    // DISABLE REGISTRATION UI
+    
     document.querySelectorAll(
       '#signup-btn, [data-auth="signup"]'
     ).forEach(element => element.remove());
   }
 
-  // HOME AND LIKED POSTS
+  
 
   if (isHomePage || isLikedPage) {
     const postsFeed =
@@ -584,7 +595,7 @@ document.addEventListener(
       }
     };
 
-    // LOAD POSTS
+    
 
     async function loadPosts() {
       window.DugitalLoader?.show(
@@ -621,9 +632,7 @@ document.addEventListener(
             ).catch(() => ({ data: [] }))
           : Promise.resolve({ data: [] });
 
-        // Try the original relational feed query first. If a related table
-        // has a broken relationship/grant, use a plain posts query so the
-        // entire news feed does not disappear. Backend RLS still applies.
+        
         let { data: posts, error: postsError } = await postsRequest;
         if (postsError) {
           console.warn('[Dugital] Feed relation query failed:', {
@@ -647,7 +656,7 @@ document.addEventListener(
             throw fallback.error;
           }
           posts = fallback.data || [];
-          // Optional enrichment. Failure here must NOT hide existing posts.
+          
           const authorIds = [...new Set(posts.map(p => p.user_id).filter(Boolean))];
           const postIds = posts.map(p => p.id);
           const profileMap = new Map();
@@ -799,7 +808,7 @@ document.addEventListener(
 
           let mediaHTML = '';
 
-          // SAFE MEDIA RENDERING
+          
 
           if (post.media_url) {
             const rawUrls = String(
@@ -946,7 +955,7 @@ document.addEventListener(
             descHTML = `<span class="desc-text">${escapeHtml(shortDesc)}</span>`;
           }
 
-          // POST HTML
+          
 
           const postHTML = `
             <div class="post-card"
@@ -1303,7 +1312,7 @@ document.addEventListener(
       }
     );
 
-    // DELETE POSTS
+    
 
     const deleteModal =
       document.getElementById(
