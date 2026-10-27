@@ -30,13 +30,15 @@
         <div class="input-wrap"><i class="fa-regular fa-envelope"></i><input type="email" id="email" placeholder="test@gmail.com" autocomplete="email">
         </div><label for="password">Password</label>
         <div class="input-wrap"><i class="fa-solid fa-lock"></i><input type="password" id="password" placeholder="********" autocomplete="current-password">
-        </div><button id="login-btn" class="primary-btn">Sign In <i class="fa-solid fa-arrow-right"></i></button>
+        </div>
+        <div class="cf-turnstile" data-sitekey="0x4AAAAAAFox0a1ud_9D_51v" data-theme="dark"></div>
+        <button id="login-btn" class="primary-btn">Sign In <i class="fa-solid fa-arrow-right"></i></button>
         <p id="auth-error" class="error-msg" role="alert"></p>
       </section>
     </main>
     <script src="canvas-bg.js" defer></script>
     <script src="ui.js" defer></script>
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
     <script type="module" src="app.js"></script>
   </body>
 </html>
-
