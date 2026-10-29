@@ -3,8 +3,7 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 const supabaseUrl = 'https://vycidctybcihudvuydwj.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ5Y2lkY3R5YmNpaHVkdnV5ZHdqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA0NDE5MjMsImV4cCI6MjEwNjAxNzkyM30.WtaUyVNEBdSmodPCNFGM9X_ArW07QcemmyQIGQeLmyg';
 
-// This file runs in browsers. Only anon or sb_publishable keys belong here.
-// NEVER insert service_role, sb_secret, database passwords, or PATs.
+
 function assertPublicSupabaseKey(key) {
   if (typeof key !== 'string' || !key.trim()) {
     throw new Error('Missing public Supabase API key.');
@@ -53,16 +52,50 @@ function escapeHtml(value) {
     .replace(/'/g, '&#039;');
 }
 
-// Display-only text cleanup: keep paragraphs, remove excessive empty lines.
-// Saved post descriptions in Supabase are never modified.
+// Preserve spaces and paragraphs exactly as authored (including multiple spaces).
+// Bold selection is stored as **text**; render it as safe HTML, never raw HTML.
 function normalizeDisplayDescription(value) {
-  return String(value ?? '')
-    .replace(/\r\n?/g, '\n')
-    .split('\n')
-    .map(line => line.trim())
-    .join('\n')
-    .replace(/\n{2,}/g, '\n')
-    .trim();
+  return String(value ?? '').replace(/\r\n?/g, '\n');
+}
+
+function renderPostDescription(value, maxCharacters = Infinity) {
+  const source = normalizeDisplayDescription(value);
+  const parts = [];
+  const boldPattern = /\*\*([\s\S]+?)\*\*/g;
+  let offset = 0;
+  let match;
+
+  while ((match = boldPattern.exec(source)) !== null) {
+    if (match.index > offset) {
+      parts.push({ text: source.slice(offset, match.index), bold: false });
+    }
+    parts.push({ text: match[1], bold: true });
+    offset = boldPattern.lastIndex;
+  }
+  if (offset < source.length) {
+    parts.push({ text: source.slice(offset), bold: false });
+  }
+
+  const totalCharacters = parts.reduce((count, part) =>
+    count + Array.from(part.text).length, 0);
+  let remaining = maxCharacters;
+  let html = '';
+
+  for (const part of parts) {
+    if (remaining <= 0) break;
+    const characters = Array.from(part.text);
+    const shown = characters.slice(0, remaining).join('');
+    if (part.bold) {
+      html += `<strong class="desc-bold">${escapeHtml(shown)}</strong>`;
+    } else {
+      html += escapeHtml(shown);
+    }
+    remaining -= characters.length;
+  }
+
+  const hasMore = totalCharacters > maxCharacters;
+  if (hasMore) html += '…';
+  return { html, hasMore };
 }
 
 function withTimeout(task, ms, label) {
@@ -948,15 +981,13 @@ document.addEventListener(
           const shortDesc =
             normalizeDisplayDescription(post.description);
 
+          const feedDescription = renderPostDescription(shortDesc, 200);
           let descHTML = '';
 
-          if (shortDesc.length > 200) {
-            const truncated =
-              Array.from(shortDesc).slice(0, 200).join('') + '...';
-
-            descHTML = `<span class="desc-text" data-full="${escapeHtml(shortDesc)}" data-short="${escapeHtml(truncated)}">${escapeHtml(truncated)}</span> <button class="read-more-btn" data-action="toggle-description">more</button>`;
+          if (feedDescription.hasMore) {
+            descHTML = `<span class="desc-text" data-full="${escapeHtml(shortDesc)}" data-preview-limit="200">${feedDescription.html}</span> <button class="read-more-btn" data-action="toggle-description">more</button>`;
           } else if (shortDesc.length > 0) {
-            descHTML = `<span class="desc-text">${escapeHtml(shortDesc)}</span>`;
+            descHTML = `<span class="desc-text">${feedDescription.html}</span>`;
           }
 
           // POST HTML
@@ -1084,12 +1115,13 @@ document.addEventListener(
         button.innerText.trim().toLowerCase() !==
         'less';
 
-      textSpan.textContent =
-        textSpan.getAttribute(
-          isCollapsed
-            ? 'data-full'
-            : 'data-short'
-        ) || '';
+      // Render bold safely when expanding/collapsing; retain authored spaces.
+      const fullDescription = textSpan.getAttribute('data-full') || '';
+      const previewLimit = Number(textSpan.getAttribute('data-preview-limit')) || 200;
+      textSpan.innerHTML = renderPostDescription(
+        fullDescription,
+        isCollapsed ? Infinity : previewLimit
+      ).html;
 
       button.innerText =
         isCollapsed ? 'less' : 'more';
@@ -1594,11 +1626,8 @@ document.addEventListener(
 
       // The caption stays visible in the viewer even for long RTL text.
       const desc = normalizeDisplayDescription(post.description);
-      const codepoints = Array.from(desc);
-      const hasLongCaption = codepoints.length > 180;
-      const preview = hasLongCaption
-        ? codepoints.slice(0, 180).join('').trimEnd() + '…'
-        : desc;
+      const lightboxDescription = renderPostDescription(desc, 180);
+      const hasLongCaption = lightboxDescription.hasMore;
 
       infoOverlay.classList.add('dugital-caption-fixed');
       infoOverlay.innerHTML = `
@@ -1612,7 +1641,7 @@ document.addEventListener(
               <div class="lightbox-desc" dir="auto">
                 <span class="desc-text"
                   data-full="${escapeHtml(desc)}"
-                  data-short="${escapeHtml(preview)}">${escapeHtml(preview)}</span>
+                  data-preview-limit="180">${lightboxDescription.html}</span>
               </div>
             </div>
             ${hasLongCaption ? `
@@ -1863,6 +1892,49 @@ document.addEventListener(
         );
       }
     );
+
+    // Bold only the selected caption text, without changing upload behavior.
+    const captionInput = document.getElementById('post-desc');
+    const boldButton = document.getElementById('post-desc-bold-btn');
+
+    function boldSelectedCaptionText() {
+      if (!captionInput) return;
+      const start = captionInput.selectionStart;
+      const end = captionInput.selectionEnd;
+      if (start === end) {
+        captionInput.focus();
+        return;
+      }
+
+      const selected = captionInput.value.slice(start, end);
+      const surrounded = start >= 2 &&
+        captionInput.value.slice(start - 2, start) === '**' &&
+        captionInput.value.slice(end, end + 2) === '**';
+      const includesMarkers = selected.startsWith('**') &&
+        selected.endsWith('**') && selected.length > 4;
+
+      if (surrounded) {
+        captionInput.setRangeText(selected, start - 2, end + 2, 'select');
+        captionInput.setSelectionRange(start - 2, end - 2);
+      } else if (includesMarkers) {
+        captionInput.setRangeText(selected.slice(2, -2), start, end, 'select');
+        captionInput.setSelectionRange(start, end - 4);
+      } else {
+        captionInput.setRangeText(`**${selected}**`, start, end, 'select');
+        captionInput.setSelectionRange(start + 2, end + 2);
+      }
+      captionInput.focus();
+      captionInput.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+
+    boldButton?.addEventListener('mousedown', event => event.preventDefault());
+    boldButton?.addEventListener('click', boldSelectedCaptionText);
+    captionInput?.addEventListener('keydown', event => {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'b') {
+        event.preventDefault();
+        boldSelectedCaptionText();
+      }
+    });
 
     // PUBLISH POST
 
@@ -2169,3 +2241,4 @@ document.addEventListener(
     );
   }
 });
+
