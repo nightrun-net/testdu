@@ -5,6 +5,20 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="theme-color" content="#102b57"><title>Dugital</title>
     <link rel="stylesheet" href="style.css">
+    <style id="dugital-caption-bold-toolbar">
+      .dugital-format-toolbar { display: flex; align-items: center; gap: 8px; margin: 9px 0; }
+      .dugital-format-toolbar button {
+        display: inline-flex; align-items: center; justify-content: center;
+        min-width: 38px; min-height: 36px; padding: 5px 12px;
+        border: 1px solid rgba(91, 146, 229, .42); border-radius: 9px;
+        background: rgba(36, 86, 170, .13); color: inherit;
+        font: inherit; font-weight: 800; cursor: pointer;
+      }
+      .dugital-format-toolbar button:hover,
+      .dugital-format-toolbar button:focus-visible {
+        border-color: #478aea; background: rgba(55, 116, 207, .25);
+      }
+    </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   </head>
   <body class="app-body">
@@ -36,6 +50,9 @@
             </div>
           </div>
           <div class="upload-area"><label for="post-desc">Your caption</label>
+            <div class="dugital-format-toolbar" role="toolbar" aria-label="Caption formatting">
+              <button id="post-desc-bold-btn" type="button" title="Bold selected text (Ctrl+B / Cmd+B)" aria-label="Bold selected text"><strong>B</strong></button>
+            </div>
             <div class="upload-flex-container"><textarea id="post-desc" placeholder="Tell your story..." dir="auto"></textarea>
               <div id="preview-container" class="preview-container hidden"></div>
             </div>
@@ -53,4 +70,3 @@
     <script type="module" src="app.js"></script>
   </body>
 </html>
-
