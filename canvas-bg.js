@@ -1,4 +1,3 @@
-
 (() => {
   const canvas = document.getElementById('auth-canvas');
   if (!canvas) return;
